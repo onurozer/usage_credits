@@ -9,11 +9,10 @@ module UsageCredits
   #
   # @see PayChargeExtension for the actual payment processing, credit pack fulfilling and refund handling
   class CreditPack
-
     attr_reader :name,
-                :credits, :bonus_credits,
-                :price_cents, :price_currency,
-                :metadata
+      :credits, :bonus_credits,
+      :price_cents, :price_currency,
+      :metadata
 
     def initialize(name)
       @name = name
@@ -48,7 +47,7 @@ module UsageCredits
     def currency(currency)
       currency = currency.to_s.downcase.to_sym
       unless UsageCredits::Configuration::VALID_CURRENCIES.include?(currency)
-        raise ArgumentError, "Invalid currency. Must be one of: #{UsageCredits::Configuration::VALID_CURRENCIES.join(', ')}"
+        raise ArgumentError, "Invalid currency. Must be one of: #{UsageCredits::Configuration::VALID_CURRENCIES.join(", ")}"
       end
       @price_currency = currency.to_s.upcase
     end
@@ -124,7 +123,7 @@ module UsageCredits
     # =========================================
 
     # Create a Stripe Checkout session for this pack
-    def create_checkout_session(user)
+    def create_checkout_session(user, **options)
       raise ArgumentError, "User must have a payment processor" unless user.respond_to?(:payment_processor) && user.payment_processor
 
       user.payment_processor.checkout(
@@ -140,8 +139,8 @@ module UsageCredits
           },
           quantity: 1
         }],
-        payment_intent_data: { metadata: base_metadata },
-        metadata: base_metadata
+        payment_intent_data: {metadata: base_metadata},
+        metadata: base_metadata, **options
       )
     end
 
