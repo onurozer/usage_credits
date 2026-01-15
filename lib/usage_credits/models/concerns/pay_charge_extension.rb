@@ -23,14 +23,17 @@ module UsageCredits
     def succeeded?
       case type
       when "Pay::Stripe::Charge"
-        status = data["status"] || data[:status]
+        status = object&.dig("status") || data&.dig("status")
         # Explicitly check for failure states
         return false if status == "failed"
         return false if status == "pending"
         return false if status == "canceled"
         return true if status == "succeeded"
         # Fallback: check if amount was actually captured
-        return data["amount_captured"].to_i == amount.to_i && amount.to_i.positive?
+        captured = object&.dig("amount_captured") || data&.dig("amount_captured")
+        captured.to_i == amount.to_i && amount.to_i.positive?
+      else
+        true
       end
 
       # For non-Stripe charges, we assume Pay only creates charges after successful payment
